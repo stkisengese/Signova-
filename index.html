@@ -32,6 +32,52 @@
   ═══════════════════════════════════════════════════════ -->
     <div id="workspace">
 
+      <!-- Left Drawer: Learning Hub -->
+      <aside id="learning-drawer" class="drawer drawer--left">
+        <div class="drawer__header">
+          <h2 class="drawer__title">Learning Hub</h2>
+          <button class="drawer__close" aria-label="Close">✕</button>
+        </div>
+        <div class="drawer__content">
+          <div id="lessons-list" class="lessons-grid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Drawer: Common Phrases / Settings -->
+      <aside id="settings-drawer" class="drawer drawer--right">
+        <div class="drawer__header">
+          <h2 class="drawer__title">Quick Tools</h2>
+          <button class="drawer__close" aria-label="Close">✕</button>
+        </div>
+        <div class="drawer__content">
+          <div class="settings-group">
+            <h3 class="settings-label">Hardware Settings</h3>
+            <div class="settings-control">
+              <label for="cameraSelect" class="dock-label">Camera</label>
+              <select id="cameraSelect" class="settings-select"></select>
+            </div>
+            <div class="settings-control">
+              <label for="micSelect" class="dock-label">Microphone</label>
+              <select id="micSelect" class="settings-select"></select>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3 class="settings-label">Greetings</h3>
+            <div id="phrases-greetings" class="phrases-grid"></div>
+          </div>
+          <div class="settings-group">
+            <h3 class="settings-label">Basics</h3>
+            <div id="phrases-basics" class="phrases-grid"></div>
+          </div>
+          <div class="settings-group">
+            <h3 class="settings-label">Actions & Needs</h3>
+            <div id="phrases-actions" class="phrases-grid"></div>
+          </div>
+        </div>
+      </aside>
+
       <!-- ── 3D Stage (full viewport background) ──────── -->
       <main id="canvas-3d-container" aria-label="3D signing avatar stage">
         <!-- Three.js canvas injected here by app.js -->
