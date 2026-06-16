@@ -706,7 +706,7 @@ body {
 .dock-card--main { min-width: 380px; }
 
 /* Voice card — narrower */
-.dock-card--voice { min-width: 180px; }
+.dock-card--voice { min-width: 218px; }
 
 /* Dock section label */
 .dock-label {
