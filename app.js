@@ -153,6 +153,64 @@ async function initDeviceSelection() {
     }
 }
 
+function populateLessons() {
+    const list = document.getElementById('lessons-list');
+    if (!list) return;
+
+    list.innerHTML = '';
+    LESSONS.forEach(lesson => {
+        const progress = loadProgress(lesson.id);
+        const card = document.createElement('div');
+        card.className = 'lesson-card';
+        card.innerHTML = `
+            <h3 class="lesson-card__title">${lesson.title}</h3>
+            <p class="lesson-card__desc">${lesson.description}</p>
+            <div class="lesson-card__footer">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <span class="lesson-card__stat">${progress}%</span>
+            </div>
+        `;
+        card.addEventListener('click', () => startLesson(lesson));
+        list.appendChild(card);
+    });
+}
+
+async function startLesson(lesson) {
+    currentLesson = lesson;
+    currentLessonStep = 0;
+    
+    // Close drawers
+    document.querySelectorAll('.drawer').forEach(d => d.classList.remove('drawer--active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-btn--active'));
+
+    // Visual feedback
+    const sentenceDisplay = document.getElementById('sentence');
+    if (sentenceDisplay) {
+        sentenceDisplay.innerText = `Lesson: ${lesson.title}. Ready?`;
+    }
+
+    // Start with the first sign
+    presentLessonStep();
+}
+
+async function presentLessonStep() {
+    if (!currentLesson) return;
+    const target = currentLesson.content[currentLessonStep];
+    
+    const sentenceDisplay = document.getElementById('sentence');
+    if (sentenceDisplay) {
+        sentenceDisplay.innerHTML = `Mirror me: <strong style="color:var(--purple)">${target}</strong>`;
+    }
+
+    // Play the target sign
+    playSignSequence(target);
+
+    // Auto-start tracking if not active
+    if (!webcam) startTracking();
+}
+
 // ==========================================
 // THREE.JS SCENE SETUP
 // ==========================================
