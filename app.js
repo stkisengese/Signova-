@@ -560,7 +560,15 @@ async function startRecording() {
                     body: formData
                 });
                 const data = await response.json();
-                document.getElementById('speechResult').innerText = data.text || 'No transcription received.';
+                const transcription = data.text || '';
+                document.getElementById('speechResult').innerText = transcription || 'No transcription received.';
+                
+                // Voice-to-Sign Bridge: Automatically trigger animation
+                if (transcription) {
+                    const input = document.getElementById('textToSignInput');
+                    if (input) input.value = transcription;
+                    playSignSequence(transcription);
+                }
             } catch (error) {
                 console.error('Speech-to-Text API Error:', error);
                 document.getElementById('speechResult').innerText = 'Error processing speech.';
@@ -592,6 +600,7 @@ function stopRecording() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     init3DSpace();
+    initUI();
 
     // Tracking Controls
     document.getElementById('startTrackingBtn')?.addEventListener('click', startTracking);
