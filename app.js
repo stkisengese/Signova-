@@ -299,6 +299,29 @@ window.clearSentence = function() {
     document.getElementById("letter").innerText = "-";
 };
 
+function handleLessonSuccess() {
+    if (!currentLesson) return;
+    
+    const target = currentLesson.content[currentLessonStep];
+    console.log(`Success! Correctly signed: ${target}`);
+
+    // Progress to next step
+    currentLessonStep++;
+    
+    if (currentLessonStep >= currentLesson.content.length) {
+        // Lesson complete
+        const progress = 100;
+        saveProgress(currentLesson.id, progress);
+        document.getElementById('sentence').innerText = `Lesson Complete! 🎉`;
+        currentLesson = null;
+        populateLessons(); // Refresh UI
+    } else {
+        // Visual feedback
+        document.getElementById('sentence').innerText = `Great! Next sign...`;
+        setTimeout(presentLessonStep, 1500);
+    }
+}
+
 // ==========================================
 // AUDIO RECORDING & SPEECH-TO-TEXT
 // ==========================================
