@@ -137,6 +137,22 @@
         <!-- Bottom control dock ────────────────────────── -->
         <div class="dock">
 
+          <!-- Navigation Rail (Mobile-style) -->
+          <nav class="dock-nav" aria-label="Main Navigation">
+            <button class="nav-btn" id="toggleLearningBtn" title="Learning Hub">
+              <span class="nav-btn__icon">🎓</span>
+              <span class="nav-btn__label">Learn</span>
+            </button>
+            <button class="nav-btn" id="togglePhrasesBtn" title="Common Phrases">
+              <span class="nav-btn__icon">💬</span>
+              <span class="nav-btn__label">Phrases</span>
+            </button>
+            <button class="nav-btn nav-btn--emergency" id="emergencyBtn" title="Emergency Mode">
+              <span class="nav-btn__icon">🆘</span>
+              <span class="nav-btn__label">SOS</span>
+            </button>
+          </nav>
+
           <!-- Text to Sign card -->
           <div class="dock-card dock-card--main">
             <label class="dock-label" for="textToSignInput">Text to Sign</label>
