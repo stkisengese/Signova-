@@ -12,6 +12,7 @@ import {
     API_ENDPOINTS
 } from './config.js';
 import { WORD_SIGNS, tokenizeToSigns } from './sign_lang_words.js';
+import { LESSONS, loadProgress, saveProgress } from './lessons.js';
 
 // ==========================================
 // STATE & CORE VARIABLES
@@ -21,6 +22,8 @@ const container = document.getElementById('canvas-3d-container');
 let isAnimatingString = false;
 let webcam = null; // Reference for MediaPipe Camera
 let isEmergencyMode = false;
+let currentLesson = null;
+let currentLessonStep = 0;
 
 // boneTargets drives the LERP — always write to this, never directly to bone.rotation
 const boneTargets = JSON.parse(JSON.stringify(REST_POSE));
@@ -216,6 +219,14 @@ hands.onResults(async (results) => {
             const prediction = data.prediction || "";
             document.getElementById("letter").innerText = prediction;
 
+            // Mirror Me Logic: Validate against lesson target
+            if (currentLesson) {
+                const target = currentLesson.content[currentLessonStep];
+                if (prediction.toUpperCase() === target.toUpperCase()) {
+                    handleLessonSuccess();
+                }
+            }
+
             // Handle UI stabilization timeout buffer (1200ms)
             if (prediction !== currentPrediction) {
                 currentPrediction = prediction; predictionStart = now;
@@ -298,7 +309,11 @@ let recorder, chunks = [];
  */
 async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micSource = document.getElementById('micSelect')?.value;
+        const constraints = {
+            audio: micSource ? { deviceId: { exact: micSource } } : true
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         recorder = new MediaRecorder(stream);
         chunks = [];
 
