@@ -546,6 +546,129 @@ body {
 
 .sent-clear:hover { color: var(--pink); }
 
+/* ── Navigation Rail (Mobile-style) ──────────────── */
+.dock-nav {
+  display: flex;
+  gap: 8px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  padding: 8px;
+  box-shadow: var(--glass-shadow);
+  height: max-content;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all .2s;
+  min-width: 64px;
+}
+
+.nav-btn:hover {
+  background: rgba(123,47,190,0.08);
+}
+
+.nav-btn--active {
+  background: var(--plight);
+  color: var(--purple);
+}
+
+.nav-btn__icon {
+  font-size: 1.4rem;
+}
+
+.nav-btn__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--t2);
+}
+
+.nav-btn--active .nav-btn__label { color: var(--purple); }
+
+.nav-btn--emergency {
+  background: rgba(233,30,140,0.1);
+}
+
+.nav-btn--emergency:hover {
+  background: rgba(233,30,140,0.2);
+}
+
+.nav-btn--emergency .nav-btn__label { color: var(--pink); }
+
+/* ── Lessons Grid ────────────────────────────────── */
+.lessons-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.lesson-card {
+  background: #fff;
+  border: 1px solid rgba(123,47,190,0.1);
+  border-radius: var(--r-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.lesson-card:hover {
+  border-color: var(--purple);
+  box-shadow: 0 4px 16px rgba(123,47,190,0.1);
+}
+
+.lesson-card__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--t1);
+  margin-bottom: 4px;
+}
+
+.lesson-card__desc {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.lesson-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--plight);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--grad-btn);
+  width: 0%;
+  transition: width .4s var(--ease);
+}
+
+.lesson-card__stat {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--purple);
+}
+
 /* ═══════════════════════════════════════════════════
    BOTTOM DOCK — floating controls bar
 ═══════════════════════════════════════════════════ */
