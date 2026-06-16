@@ -58,6 +58,167 @@ body {
   overflow: hidden;
 }
 
+/* ═══════════════════════════════════════════════════
+   WORKSPACE — layout management
+═══════════════════════════════════════════════════ */
+#workspace {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex; /* Allow sidebars to push if needed, though they usually float */
+}
+
+/* ── Drawers (Sidebars) ─────────────────────────── */
+.drawer {
+  position: fixed;
+  top: 80px; /* Below topbar */
+  bottom: 120px; /* Above dock */
+  width: 300px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--glass-shadow);
+  z-index: 30;
+  transition: transform var(--dur) var(--ease), opacity var(--dur);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer--left {
+  left: 20px;
+  border-radius: var(--r-lg);
+  transform: translateX(calc(-100% - 40px)); /* Hidden by default */
+  opacity: 0;
+}
+
+.drawer--right {
+  right: 20px;
+  border-radius: var(--r-lg);
+  transform: translateX(calc(100% + 40px)); /* Hidden by default */
+  opacity: 0;
+}
+
+/* Active states for drawers */
+.drawer--active {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.drawer__header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.drawer__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--t1);
+}
+
+.drawer__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--t3);
+  cursor: pointer;
+  padding: 4px;
+  transition: color .15s;
+}
+
+.drawer__close:hover { color: var(--pink); }
+
+.drawer__content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.drawer__placeholder {
+  font-size: 14px;
+  color: var(--t2);
+  text-align: center;
+  margin-top: 40px;
+}
+
+.settings-group {
+  margin-bottom: 24px;
+}
+
+.settings-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--purple);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(123,47,190,0.1);
+}
+
+.settings-control {
+  margin-bottom: 12px;
+}
+
+.settings-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1.5px solid rgba(123,47,190,0.15);
+  border-radius: var(--r-md);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--t1);
+  outline: none;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+
+.settings-select:focus {
+  border-color: var(--purple);
+}
+
+/* ── Phrases Grid ────────────────────────────────── */
+.phrases-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.phrase-card {
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid rgba(123,47,190,0.1);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phrase-card:hover {
+  border-color: var(--purple);
+  box-shadow: 0 4px 12px rgba(123,47,190,0.1);
+  transform: translateY(-2px);
+}
+
+.phrase-card__icon { font-size: 1.2rem; }
+.phrase-card__text { font-size: 14px; font-weight: 600; color: var(--t1); }
+
 /* ── 3D Stage fills everything ────────────────────── */
 #canvas-3d-container {
   position: absolute;
@@ -65,6 +226,7 @@ body {
   background: linear-gradient(170deg, #f5f0ff 0%, #ede4fb 40%, #f8edf8 70%, #fff0f8 100%);
   display: block;
   overflow: hidden;
+  z-index: 1;
 }
 
 /* The Three.js canvas */
@@ -637,7 +799,6 @@ input[type="range"]::-moz-range-thumb {
 
 /* ═══════════════════════════════════════════════════
    GLOBAL BUTTON RESET — prevent full-width override
-   on any button not in the left panel (there is none)
 ═══════════════════════════════════════════════════ */
 button {
   font-family: var(--font);
