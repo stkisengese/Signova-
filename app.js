@@ -123,6 +123,36 @@ function initUI() {
     initDeviceSelection();
 }
 
+async function initDeviceSelection() {
+    const cameraSelect = document.getElementById('cameraSelect');
+    const micSelect = document.getElementById('micSelect');
+
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        
+        devices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            if (device.kind === 'videoinput') {
+                option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                cameraSelect.appendChild(option);
+            } else if (device.kind === 'audioinput') {
+                option.text = device.label || `Mic ${micSelect.length + 1}`;
+                micSelect.appendChild(option);
+            }
+        });
+
+        cameraSelect?.addEventListener('change', () => {
+            if (webcam) {
+                stopTracking();
+                startTracking();
+            }
+        });
+    } catch (e) {
+        console.error("Device enumeration failed:", e);
+    }
+}
+
 // ==========================================
 // THREE.JS SCENE SETUP
 // ==========================================
