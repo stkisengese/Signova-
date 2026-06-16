@@ -81,6 +81,49 @@ function stopAnimation() {
 }
 
 // ==========================================
+// UI & DRAWER MANAGEMENT
+// ==========================================
+function initUI() {
+    const learningBtn = document.getElementById('toggleLearningBtn');
+    const phrasesBtn = document.getElementById('togglePhrasesBtn');
+    const emergencyBtn = document.getElementById('emergencyBtn');
+    
+    const learningDrawer = document.getElementById('learning-drawer');
+    const settingsDrawer = document.getElementById('settings-drawer');
+    
+    const closeBtns = document.querySelectorAll('.drawer__close');
+
+    learningBtn?.addEventListener('click', () => {
+        learningDrawer?.classList.toggle('drawer--active');
+        settingsDrawer?.classList.remove('drawer--active');
+        learningBtn.classList.toggle('nav-btn--active');
+        phrasesBtn?.classList.remove('nav-btn--active');
+    });
+
+    phrasesBtn?.addEventListener('click', () => {
+        settingsDrawer?.classList.toggle('drawer--active');
+        learningDrawer?.classList.remove('drawer--active');
+        phrasesBtn.classList.toggle('nav-btn--active');
+        learningBtn?.classList.remove('nav-btn--active');
+    });
+
+    closeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            learningDrawer?.classList.remove('drawer--active');
+            settingsDrawer?.classList.remove('drawer--active');
+            learningBtn?.classList.remove('nav-btn--active');
+            phrasesBtn?.classList.remove('nav-btn--active');
+        });
+    });
+
+    emergencyBtn?.addEventListener('click', toggleEmergencyMode);
+
+    populateCommonPhrases();
+    populateLessons();
+    initDeviceSelection();
+}
+
+// ==========================================
 // THREE.JS SCENE SETUP
 // ==========================================
 function init3DSpace() {
