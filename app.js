@@ -11,6 +11,7 @@ import {
     MEDIAPIPE_CONFIG,
     API_ENDPOINTS
 } from './config.js';
+import { WORD_SIGNS, tokenizeToSigns } from './sign_lang_words.js';
 
 // ==========================================
 // STATE & CORE VARIABLES
@@ -19,6 +20,7 @@ let scene, camera, renderer, avatar;
 const container = document.getElementById('canvas-3d-container');
 let isAnimatingString = false;
 let webcam = null; // Reference for MediaPipe Camera
+let isEmergencyMode = false;
 
 // boneTargets drives the LERP — always write to this, never directly to bone.rotation
 const boneTargets = JSON.parse(JSON.stringify(REST_POSE));
@@ -47,8 +49,19 @@ function animateCharacterToLetter(letter) {
 async function playSignSequence(text) {
     if (isAnimatingString) return;
     isAnimatingString = true;
-    const sequence = text.toUpperCase().replace(/[^A-Z ]/g, '');
+    
+    // Check if it's a word sign or a sequence of letters
+    const wordSigns = tokenizeToSigns(text);
     const delay = parseInt(document.getElementById('speedSlider')?.value || 1000);
+
+    if (wordSigns.length > 0) {
+        // Implementation for word signs will go here
+        // For now, let's fall back to letters if no word signs found
+        // or just log for debugging
+        console.log('Word signs detected:', wordSigns);
+    }
+
+    const sequence = text.toUpperCase().replace(/[^A-Z ]/g, '');
 
     for (const char of sequence) {
         if (!isAnimatingString) break; // allow stop
