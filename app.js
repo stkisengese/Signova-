@@ -211,6 +211,65 @@ async function presentLessonStep() {
     if (!webcam) startTracking();
 }
 
+function populateCommonPhrases() {
+    const categories = {
+        'phrases-greetings': ['HELLO', 'WELCOME', 'HOW_ARE_YOU', 'NAME'],
+        'phrases-basics': ['YES', 'NO', 'GOOD', 'BAD', 'PLEASE', 'THANK_YOU', 'SORRY'],
+        'phrases-actions': ['GO', 'STOP', 'HELP', 'WATER', 'UNDERSTAND', 'LEARN', 'FINISHED']
+    };
+
+    const icons = {
+        'HELLO': '👋', 'WELCOME': '🤝', 'HOW_ARE_YOU': '❓', 'NAME': '🆔',
+        'YES': '✅', 'NO': '❌', 'GOOD': '👍', 'BAD': '👎', 'PLEASE': '✨', 'THANK_YOU': '🙏', 'SORRY': '🙇',
+        'GO': '🏃', 'STOP': '✋', 'HELP': '🆘', 'WATER': '💧', 'UNDERSTAND': '💡', 'LEARN': '📚', 'FINISHED': '🏁'
+    };
+
+    Object.entries(categories).forEach(([id, words]) => {
+        const container = document.getElementById(id);
+        if (!container) return;
+        
+        words.forEach(key => {
+            if (WORD_SIGNS[key]) {
+                const card = document.createElement('div');
+                card.className = 'phrase-card';
+                card.innerHTML = `
+                    <span class="phrase-card__icon">${icons[key] || '💬'}</span>
+                    <span class="phrase-card__text">${key.replace(/_/g, ' ')}</span>
+                `;
+                card.addEventListener('click', () => {
+                    const input = document.getElementById('textToSignInput');
+                    if (input) {
+                        input.value = key.replace(/_/g, ' ');
+                        playSignSequence(input.value);
+                    }
+                });
+                container.appendChild(card);
+            }
+        });
+    });
+}
+
+function toggleEmergencyMode() {
+    isEmergencyMode = !isEmergencyMode;
+    const btn = document.getElementById('emergencyBtn');
+    const workspace = document.getElementById('workspace');
+    
+    if (isEmergencyMode) {
+        btn?.classList.add('nav-btn--active');
+        workspace?.classList.add('emergency-active');
+        // Visual cue: scale up avatar or change lighting
+        if (camera) {
+            camera.position.z = 1.8; // Move closer
+        }
+    } else {
+        btn?.classList.remove('nav-btn--active');
+        workspace?.classList.remove('emergency-active');
+        if (camera) {
+            camera.position.z = CAMERA_CONFIG.position.z; // Move back
+        }
+    }
+}
+
 // ==========================================
 // THREE.JS SCENE SETUP
 // ==========================================
