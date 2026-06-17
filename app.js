@@ -11,6 +11,8 @@ import {
     MEDIAPIPE_CONFIG,
     API_ENDPOINTS
 } from './config.js';
+import { WORD_SIGNS, tokenizeToSigns } from './sign_lang_words.js';
+import { LESSONS, loadProgress, saveProgress } from './lessons.js';
 
 // ==========================================
 // STATE & CORE VARIABLES
@@ -19,6 +21,9 @@ let scene, camera, renderer, avatar;
 const container = document.getElementById('canvas-3d-container');
 let isAnimatingString = false;
 let webcam = null; // Reference for MediaPipe Camera
+let isEmergencyMode = false;
+let currentLesson = null;
+let currentLessonStep = 0;
 
 // boneTargets drives the LERP — always write to this, never directly to bone.rotation
 const boneTargets = JSON.parse(JSON.stringify(REST_POSE));
@@ -47,8 +52,19 @@ function animateCharacterToLetter(letter) {
 async function playSignSequence(text) {
     if (isAnimatingString) return;
     isAnimatingString = true;
-    const sequence = text.toUpperCase().replace(/[^A-Z ]/g, '');
+    
+    // Check if it's a word sign or a sequence of letters
+    const wordSigns = tokenizeToSigns(text);
     const delay = parseInt(document.getElementById('speedSlider')?.value || 1000);
+
+    if (wordSigns.length > 0) {
+        // Implementation for word signs will go here
+        // For now, let's fall back to letters if no word signs found
+        // or just log for debugging
+        console.log('Word signs detected:', wordSigns);
+    }
+
+    const sequence = text.toUpperCase().replace(/[^A-Z ]/g, '');
 
     for (const char of sequence) {
         if (!isAnimatingString) break; // allow stop
@@ -62,6 +78,196 @@ async function playSignSequence(text) {
 function stopAnimation() {
     isAnimatingString = false;
     applyPose(REST_POSE);
+}
+
+// ==========================================
+// UI & DRAWER MANAGEMENT
+// ==========================================
+function initUI() {
+    const learningBtn = document.getElementById('toggleLearningBtn');
+    const phrasesBtn = document.getElementById('togglePhrasesBtn');
+    const emergencyBtn = document.getElementById('emergencyBtn');
+    
+    const learningDrawer = document.getElementById('learning-drawer');
+    const settingsDrawer = document.getElementById('settings-drawer');
+    
+    const closeBtns = document.querySelectorAll('.drawer__close');
+
+    learningBtn?.addEventListener('click', () => {
+        learningDrawer?.classList.toggle('drawer--active');
+        settingsDrawer?.classList.remove('drawer--active');
+        learningBtn.classList.toggle('nav-btn--active');
+        phrasesBtn?.classList.remove('nav-btn--active');
+    });
+
+    phrasesBtn?.addEventListener('click', () => {
+        settingsDrawer?.classList.toggle('drawer--active');
+        learningDrawer?.classList.remove('drawer--active');
+        phrasesBtn.classList.toggle('nav-btn--active');
+        learningBtn?.classList.remove('nav-btn--active');
+    });
+
+    closeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            learningDrawer?.classList.remove('drawer--active');
+            settingsDrawer?.classList.remove('drawer--active');
+            learningBtn?.classList.remove('nav-btn--active');
+            phrasesBtn?.classList.remove('nav-btn--active');
+        });
+    });
+
+    emergencyBtn?.addEventListener('click', toggleEmergencyMode);
+
+    populateCommonPhrases();
+    populateLessons();
+    initDeviceSelection();
+}
+
+async function initDeviceSelection() {
+    const cameraSelect = document.getElementById('cameraSelect');
+    const micSelect = document.getElementById('micSelect');
+
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        
+        devices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            if (device.kind === 'videoinput') {
+                option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                cameraSelect.appendChild(option);
+            } else if (device.kind === 'audioinput') {
+                option.text = device.label || `Mic ${micSelect.length + 1}`;
+                micSelect.appendChild(option);
+            }
+        });
+
+        cameraSelect?.addEventListener('change', () => {
+            if (webcam) {
+                stopTracking();
+                startTracking();
+            }
+        });
+    } catch (e) {
+        console.error("Device enumeration failed:", e);
+    }
+}
+
+function populateLessons() {
+    const list = document.getElementById('lessons-list');
+    if (!list) return;
+
+    list.innerHTML = '';
+    LESSONS.forEach(lesson => {
+        const progress = loadProgress(lesson.id);
+        const card = document.createElement('div');
+        card.className = 'lesson-card';
+        card.innerHTML = `
+            <h3 class="lesson-card__title">${lesson.title}</h3>
+            <p class="lesson-card__desc">${lesson.description}</p>
+            <div class="lesson-card__footer">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <span class="lesson-card__stat">${progress}%</span>
+            </div>
+        `;
+        card.addEventListener('click', () => startLesson(lesson));
+        list.appendChild(card);
+    });
+}
+
+async function startLesson(lesson) {
+    currentLesson = lesson;
+    currentLessonStep = 0;
+    
+    // Close drawers
+    document.querySelectorAll('.drawer').forEach(d => d.classList.remove('drawer--active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-btn--active'));
+
+    // Visual feedback
+    const sentenceDisplay = document.getElementById('sentence');
+    if (sentenceDisplay) {
+        sentenceDisplay.innerText = `Lesson: ${lesson.title}. Ready?`;
+    }
+
+    // Start with the first sign
+    presentLessonStep();
+}
+
+async function presentLessonStep() {
+    if (!currentLesson) return;
+    const target = currentLesson.content[currentLessonStep];
+    
+    const sentenceDisplay = document.getElementById('sentence');
+    if (sentenceDisplay) {
+        sentenceDisplay.innerHTML = `Mirror me: <strong style="color:var(--purple)">${target}</strong>`;
+    }
+
+    // Play the target sign
+    playSignSequence(target);
+
+    // Auto-start tracking if not active
+    if (!webcam) startTracking();
+}
+
+function populateCommonPhrases() {
+    const categories = {
+        'phrases-greetings': ['HELLO', 'WELCOME', 'HOW_ARE_YOU', 'NAME'],
+        'phrases-basics': ['YES', 'NO', 'GOOD', 'BAD', 'PLEASE', 'THANK_YOU', 'SORRY'],
+        'phrases-actions': ['GO', 'STOP', 'HELP', 'WATER', 'UNDERSTAND', 'LEARN', 'FINISHED']
+    };
+
+    const icons = {
+        'HELLO': '👋', 'WELCOME': '🤝', 'HOW_ARE_YOU': '❓', 'NAME': '🆔',
+        'YES': '✅', 'NO': '❌', 'GOOD': '👍', 'BAD': '👎', 'PLEASE': '✨', 'THANK_YOU': '🙏', 'SORRY': '🙇',
+        'GO': '🏃', 'STOP': '✋', 'HELP': '🆘', 'WATER': '💧', 'UNDERSTAND': '💡', 'LEARN': '📚', 'FINISHED': '🏁'
+    };
+
+    Object.entries(categories).forEach(([id, words]) => {
+        const container = document.getElementById(id);
+        if (!container) return;
+        
+        words.forEach(key => {
+            if (WORD_SIGNS[key]) {
+                const card = document.createElement('div');
+                card.className = 'phrase-card';
+                card.innerHTML = `
+                    <span class="phrase-card__icon">${icons[key] || '💬'}</span>
+                    <span class="phrase-card__text">${key.replace(/_/g, ' ')}</span>
+                `;
+                card.addEventListener('click', () => {
+                    const input = document.getElementById('textToSignInput');
+                    if (input) {
+                        input.value = key.replace(/_/g, ' ');
+                        playSignSequence(input.value);
+                    }
+                });
+                container.appendChild(card);
+            }
+        });
+    });
+}
+
+function toggleEmergencyMode() {
+    isEmergencyMode = !isEmergencyMode;
+    const btn = document.getElementById('emergencyBtn');
+    const workspace = document.getElementById('workspace');
+    
+    if (isEmergencyMode) {
+        btn?.classList.add('nav-btn--active');
+        workspace?.classList.add('emergency-active');
+        // Visual cue: scale up avatar or change lighting
+        if (camera) {
+            camera.position.z = 1.8; // Move closer
+        }
+    } else {
+        btn?.classList.remove('nav-btn--active');
+        workspace?.classList.remove('emergency-active');
+        if (camera) {
+            camera.position.z = CAMERA_CONFIG.position.z; // Move back
+        }
+    }
 }
 
 // ==========================================
@@ -203,6 +409,14 @@ hands.onResults(async (results) => {
             const prediction = data.prediction || "";
             document.getElementById("letter").innerText = prediction;
 
+            // Mirror Me Logic: Validate against lesson target
+            if (currentLesson) {
+                const target = currentLesson.content[currentLessonStep];
+                if (prediction.toUpperCase() === target.toUpperCase()) {
+                    handleLessonSuccess();
+                }
+            }
+
             // Handle UI stabilization timeout buffer (1200ms)
             if (prediction !== currentPrediction) {
                 currentPrediction = prediction; predictionStart = now;
@@ -275,6 +489,29 @@ window.clearSentence = function() {
     document.getElementById("letter").innerText = "-";
 };
 
+function handleLessonSuccess() {
+    if (!currentLesson) return;
+    
+    const target = currentLesson.content[currentLessonStep];
+    console.log(`Success! Correctly signed: ${target}`);
+
+    // Progress to next step
+    currentLessonStep++;
+    
+    if (currentLessonStep >= currentLesson.content.length) {
+        // Lesson complete
+        const progress = 100;
+        saveProgress(currentLesson.id, progress);
+        document.getElementById('sentence').innerText = `Lesson Complete! 🎉`;
+        currentLesson = null;
+        populateLessons(); // Refresh UI
+    } else {
+        // Visual feedback
+        document.getElementById('sentence').innerText = `Great! Next sign...`;
+        setTimeout(presentLessonStep, 1500);
+    }
+}
+
 // ==========================================
 // AUDIO RECORDING & SPEECH-TO-TEXT
 // ==========================================
@@ -285,7 +522,11 @@ let recorder, chunks = [];
  */
 async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micSource = document.getElementById('micSelect')?.value;
+        const constraints = {
+            audio: micSource ? { deviceId: { exact: micSource } } : true
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         recorder = new MediaRecorder(stream);
         chunks = [];
 
@@ -319,7 +560,15 @@ async function startRecording() {
                     body: formData
                 });
                 const data = await response.json();
-                document.getElementById('speechResult').innerText = data.text || 'No transcription received.';
+                const transcription = data.text || '';
+                document.getElementById('speechResult').innerText = transcription || 'No transcription received.';
+                
+                // Voice-to-Sign Bridge: Automatically trigger animation
+                if (transcription) {
+                    const input = document.getElementById('textToSignInput');
+                    if (input) input.value = transcription;
+                    playSignSequence(transcription);
+                }
             } catch (error) {
                 console.error('Speech-to-Text API Error:', error);
                 document.getElementById('speechResult').innerText = 'Error processing speech.';
@@ -351,6 +600,7 @@ function stopRecording() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     init3DSpace();
+    initUI();
 
     // Tracking Controls
     document.getElementById('startTrackingBtn')?.addEventListener('click', startTracking);

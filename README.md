@@ -4,10 +4,13 @@ SIGNOVA is an interactive web application that bridges the gap between sign lang
 
 ## 🚀 Key Features
 
-- **Text-to-Sign:** Enter text to see a 3D avatar perform the corresponding American Sign Language (ASL) alphabet.
+- **Text-to-Sign:** Enter text to see a 3D avatar perform signs. Supports both **Letter-level** and **Word-level** (Animation Clips) signing.
 - **Sign-to-Text:** Real-time hand skeletal tracking using **Google MediaPipe** and a custom AI backend.
-- **Speech-to-Text:** Voice recording and transcription integration via the **Whisper API**.
-- **Responsive Design:** Full mobile parity with a vertical-stack layout for touch devices.
+- **Learning Hub:** Interactive ASL modules with a **"Mirror Me" validation mode** that uses AI to verify your signs.
+- **Common Phrases:** Categorized library (Greetings, Basics, Actions) for quick communication.
+- **Voice-to-Sign:** Instant bridge that transcribes speech and automatically triggers the avatar's animation.
+- **Emergency Mode:** High-visibility SOS interface for critical situations.
+- **Hardware Settings:** Built-in device selection for cameras and microphones.
 - **Secure Auth:** Integrated Google OAuth 2.0 via Google Identity Services (GSI).
 
 ---
@@ -71,12 +74,14 @@ To ensure the AI backend receives data consistent with its training pipeline, th
 
 ## 📂 Project Structure
 
-- `index.html`: Main application entry point.
-- `app.js`: Core application logic, Three.js initialization, and MediaPipe integration.
+- `index.html`: Main application entry point with overlay-based workspace.
+- `app.js`: Core application logic, Three.js initialization, UI management, and MediaPipe integration.
 - `auth.js`: Google OAuth overlay and session management.
-- `config.js`: Global configuration, API endpoints, and sign language bone mappings.
-- `style.css`: Figma-matched styles and responsive mobile layout.
-- `assets/`: 3D models (`avatar.glb`) and static images.
+- `config.js`: Global configuration, API endpoints, and letter-level sign mappings.
+- `sign_lang_words.js`: Word-level animation library and tokenization logic.
+- `lessons.js`: Educational content, progress tracking, and module metadata.
+- `style.css`: Figma-matched styles, responsive drawers, and emergency mode theme.
+- `assets/`: 3D models (`avatar.glb`) and static branding assets.
 
 ---
 
